@@ -10,7 +10,7 @@ int main(void) {
 
   int *mapped;
   int fd;
-  size_t size = 4096;
+  int size = 101;
 
   fd = shm_open("/file1", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
 
@@ -19,32 +19,33 @@ int main(void) {
     exit(-1);
   }
 
-  mapped = mmap(0, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+  mapped = mmap(0, size, PROT_WRITE, MAP_SHARED, fd, 0);
 
- if(mapped == MAP_FAILED) {
+  if(mapped == MAP_FAILED) {
     perror("mapping");
     close(fd);
     exit(-1);
   }
 
-  if(ftruncate(fd, sizeof (off_t)) == -1) {
+  if(ftruncate(fd, size) == -1) {
     perror("ftruncate");
     exit(-1);
   }
 
   printf("Please enter up to 100 integers \n");
 
-  char str[100];
-  int count = 0;
+  char str[1024];
+  int count = 1;
   int numbers;
 
-  while(fgets(str, size, stdin)) {
-    if(sscanf((char *) str, "%d", &numbers) == 1) {
-      mapped[++count] = numbers;
-      mapped[0] = count;
+  while(fgets(str, 1024, stdin)) {
+    if(sscanf(str, "%d", &numbers) > 0 && count < size) {
+      mapped[count++] = numbers;
     }
   }
-	
+
+  *mapped = count;
+
   if(msync(mapped, size, MS_SYNC) == -1) {
     perror("msync");
     exit(-1);
@@ -58,4 +59,3 @@ int main(void) {
   close(fd);
   return 0;
 }
-

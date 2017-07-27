@@ -10,7 +10,7 @@ int main(void) {
 
   int *mapped;
   int fd;
-  size_t size = 4096;
+  int size = (int) sizeof(int);
 
   fd = shm_open("/file1", O_RDONLY, S_IRUSR | S_IWUSR);
 
@@ -27,9 +27,7 @@ int main(void) {
     exit(-1);
   }
 
-  int length = sizeof(mapped);
-
-  for(int i = 0; i < length; i++) {
+  for(int i = 1; i < *mapped; i++) {
     printf("%d\n", mapped[i]);
   }
 
